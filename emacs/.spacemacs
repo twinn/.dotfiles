@@ -57,7 +57,8 @@ This function should only modify configuration layer settings."
      multiple-cursors
      (org :variables
           org-enable-roam-support t
-          org-enable-org-journal-support t)
+          org-enable-org-journal-support t
+          org-roam-directory (expand-file-name "~/Dropbox/org/personal_roam"))
      ;; (shell :variables
      ;;        shell-default-height 30
      ;;        shell-default-position 'bottom)
