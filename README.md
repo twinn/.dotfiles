@@ -11,3 +11,9 @@ git clone https://github.com/twinn/.dotfiles.git
 cd .dotfiles
 stow emacs
 ```
+
+Other deps needed
+
+```sh
+brew install ispell
+```
