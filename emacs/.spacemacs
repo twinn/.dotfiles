@@ -574,6 +574,8 @@ It is mostly for variables that should be set before packages are loaded.
 If you are unsure, try setting them in `dotspacemacs/user-config' first."
 
   (setq org-directory (org-relative ""))
+  (setq org-default-notes-file (org-relative "/inbox.org"))
+  (load "~/.config/emacs/org-habit-plus-plus.el")
   (with-eval-after-load 'org
     (mapc 'load (file-expand-wildcards "~/.config/emacs/*.el"))
     (add-to-list 'org-modules 'org-habit-plus-plus t)))
