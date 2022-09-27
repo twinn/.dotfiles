@@ -11,8 +11,14 @@ git clone https://github.com/twinn/.dotfiles.git
 cd .dotfiles
 stow emacs
 ```
-Other deps needed
+
+### Other deps needed
 
 ```sh
 brew install ispell
+```
+
+### Symlink Org directory to cloud provider
+```sh
+ln -s ~/Dropbox/org ~/org
 ```
