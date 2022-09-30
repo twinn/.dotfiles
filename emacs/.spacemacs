@@ -65,9 +65,9 @@ This function should only modify configuration layer settings."
           org-enable-roam-support t
           org-archive-location (org-relative "/.archive/%s::")
           org-roam-directory (expand-file-name (org-relative "/roam")))
-     ;; (shell :variables
-     ;;        shell-default-height 30
-     ;;        shell-default-position 'bottom)
+     (shell :variables
+            shell-default-height 30
+            shell-default-position 'bottom)
      spell-checking
      syntax-checking
      ;; version-control
