@@ -82,13 +82,7 @@ This function should only modify configuration layer settings."
    ;; `dotspacemacs/user-config'. To use a local version of a package, use the
    ;; `:location' property: '(your-package :location "~/path/to/your-package/")
    ;; Also include the dependencies as they will not be resolved automatically.
-   dotspacemacs-additional-packages '(
-                                      (use-package lsp-grammarly
-                                        :ensure t
-                                        :hook (text-mode . (lambda ()
-                                                             (require 'lsp-grammarly)
-                                                             (lsp))))  ; or lsp-deferred
-                                      )
+   dotspacemacs-additional-packages '(flycheck-grammarly)
 
    ;; A list of packages that cannot be updated.
    dotspacemacs-frozen-packages '()
@@ -557,8 +551,10 @@ If you are unsure, try setting them in `dotspacemacs/user-config' first."
   (setq org-directory (org-relative ""))
   (setq org-default-notes-file (org-relative "/inbox.org"))
   (with-eval-after-load 'org
-    (add-to-list 'org-modules 'org-habit-plus-plus t))
-  )
+    (add-to-list 'org-modules 'org-habit-plus-plus t)))
+  (require 'flycheck-grammarly)
+  (with-eval-after-load 'flycheck
+    (flycheck-grammarly-setup))
 
 
 (defun dotspacemacs/user-load ()
