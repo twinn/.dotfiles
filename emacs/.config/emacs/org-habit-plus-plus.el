@@ -1,4 +1,4 @@
-;;; org-habit-plus.el --- The (enhanced) habit tracking code for Org-mode
+;;; org-habit-plus-plus.el --- The (enhanced) habit tracking code for Org-mode
 
 ;; Original Author: John Wiegley
 ;; Copyright (C) 2009-2015 Free Software Foundation, Inc.

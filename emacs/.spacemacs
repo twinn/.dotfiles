@@ -63,6 +63,7 @@ This function should only modify configuration layer settings."
           org-startup-folded t
           org-enable-org-journal-support t
           org-enable-roam-support t
+          org-default-notes-file (org-relative "/inbox.org")
           org-archive-location (org-relative "/.archive/%s::")
           org-roam-directory (expand-file-name (org-relative "/roam")))
      (shell :variables
@@ -70,6 +71,7 @@ This function should only modify configuration layer settings."
             shell-default-position 'bottom)
      spell-checking
      syntax-checking
+     quickurl
      ;; version-control
      treemacs)
 
@@ -547,14 +549,10 @@ configuration.
 It is mostly for variables that should be set before packages are loaded.
 If you are unsure, try setting them in `dotspacemacs/user-config' first."
 
-  (load "~/.config/emacs/org-habit-plus-plus.el")
   (setq org-directory (org-relative ""))
-  (setq org-default-notes-file (org-relative "/inbox.org"))
   (with-eval-after-load 'org
+    (mapc 'load (file-expand-wildcards "~/.config/emacs/*.el"))
     (add-to-list 'org-modules 'org-habit-plus-plus t)))
-  (require 'flycheck-grammarly)
-  (with-eval-after-load 'flycheck
-    (flycheck-grammarly-setup))
 
 
 (defun dotspacemacs/user-load ()
@@ -570,7 +568,6 @@ This function is called at the very end of Spacemacs startup, after layer
 configuration.
 Put your configuration code here, except for variables that should be set
 before packages are loaded."
-  (set 'org-habit-show-all-today t)
   (setq
    split-width-threshold 0
    split-height-threshold nil)
@@ -589,8 +586,10 @@ This function is called at the very end of Spacemacs initialization."
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
+ '(org-agenda-files
+   '("~/org/habits.org" "~/org/weekly.org"))
  '(package-selected-packages
-   '(esh-help eshell-prompt-extras eshell-z multi-term shell-pop terminal-here tern vterm xterm-color flycheck-grammarly yasnippet-snippets yapfify yaml-mode ws-butler writeroom-mode winum which-key web-mode web-beautify volatile-highlights vim-powerline vi-tilde-fringe uuidgen use-package undo-tree treemacs-projectile treemacs-persp treemacs-magit treemacs-icons-dired treemacs-evil toml-mode toc-org term-cursor tagedit symon symbol-overlay string-inflection string-edit sql-indent sphinx-doc spacemacs-whitespace-cleanup spacemacs-purpose-popwin spaceline-all-the-icons space-doc smeargle slim-mode scss-mode sass-mode ron-mode restart-emacs request rainbow-delimiters racer quickrun pytest pylookup pyenv-mode pydoc py-isort pug-mode protobuf-mode prettier-js popwin poetry pippel pipenv pip-requirements pcre2el password-generator paradox overseer orgit-forge org-superstar org-roam org-rich-yank org-projectile org-present org-pomodoro org-mime org-journal org-download org-contrib org-cliplink open-junk-file ob-elixir npm-mode nose nodejs-repl nameless multi-line mmm-mode markdown-toc macrostep lorem-ipsum livid-mode live-py-mode link-hint json-reformat json-navigator json-mode js2-refactor js-doc inspector info+ indent-guide importmagic impatient-mode hybrid-mode hungry-delete holy-mode hl-todo highlight-parentheses highlight-numbers highlight-indentation hide-comnt help-fns+ helm-xref helm-themes helm-swoop helm-pydoc helm-purpose helm-projectile helm-org-rifle helm-org helm-mode-manager helm-make helm-ls-git helm-git-grep helm-flx helm-descbinds helm-css-scss helm-company helm-c-yasnippet helm-ag google-translate golden-ratio gnuplot gitignore-templates git-timemachine git-modes git-messenger git-link gh-md fuzzy font-lock+ flyspell-correct-helm flycheck-rust flycheck-pos-tip flycheck-package flycheck-elsa flycheck-elm flycheck-credo flx-ido fancy-battery eyebrowse expand-region evil-visualstar evil-visual-mark-mode evil-unimpaired evil-tutor evil-textobj-line evil-surround evil-org evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-lisp-state evil-lion evil-indent-plus evil-iedit-state evil-goggles evil-exchange evil-evilified-state evil-escape evil-ediff evil-easymotion evil-collection evil-cleverparens evil-args evil-anzu eval-sexp-fu emr emmet-mode elm-test-runner elm-mode elisp-slime-nav elisp-def editorconfig dumb-jump drag-stuff dotenv-mode dired-quick-sort diminish devdocs define-word cython-mode company-web company-anaconda column-enforce-mode code-cells clean-aindent-mode centered-cursor-mode cargo blacken auto-yasnippet auto-highlight-symbol auto-dictionary auto-compile alchemist aggressive-indent ace-link ace-jump-helm-line ac-ispell)))
+   '(tern yasnippet-snippets yapfify yaml-mode xterm-color ws-butler writeroom-mode winum which-key web-mode web-beautify vterm volatile-highlights vim-powerline vi-tilde-fringe uuidgen use-package undo-tree treemacs-projectile treemacs-persp treemacs-magit treemacs-icons-dired treemacs-evil toml-mode toc-org terminal-here term-cursor tagedit symon symbol-overlay string-inflection string-edit sql-indent sphinx-doc spacemacs-whitespace-cleanup spacemacs-purpose-popwin spaceline-all-the-icons space-doc smeargle slim-mode shell-pop scss-mode sass-mode ron-mode restart-emacs rainbow-delimiters racer quickrun pytest pylookup pyenv-mode pydoc py-isort pug-mode protobuf-mode prettier-js popwin poetry pippel pipenv pip-requirements pcre2el password-generator paradox overseer orgit-forge org-superstar org-roam org-rich-yank org-projectile org-present org-pomodoro org-mime org-journal org-download org-contrib org-cliplink open-junk-file ob-elixir npm-mode nose nodejs-repl nameless multi-term multi-line mmm-mode markdown-toc macrostep lorem-ipsum livid-mode live-py-mode link-hint json-reformat json-navigator json-mode js2-refactor js-doc inspector info+ indent-guide importmagic impatient-mode hybrid-mode hungry-delete holy-mode hl-todo highlight-parentheses highlight-numbers highlight-indentation hide-comnt help-fns+ helm-xref helm-themes helm-swoop helm-pydoc helm-purpose helm-projectile helm-org-rifle helm-org helm-mode-manager helm-make helm-ls-git helm-git-grep helm-flx helm-descbinds helm-css-scss helm-company helm-c-yasnippet helm-ag google-translate golden-ratio gnuplot gitignore-templates git-timemachine git-modes git-messenger git-link gh-md fuzzy font-lock+ flyspell-correct-helm flycheck-rust flycheck-pos-tip flycheck-package flycheck-grammarly flycheck-elsa flycheck-elm flycheck-credo flx-ido fancy-battery eyebrowse expand-region evil-visualstar evil-visual-mark-mode evil-unimpaired evil-tutor evil-textobj-line evil-surround evil-org evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-lisp-state evil-lion evil-indent-plus evil-iedit-state evil-goggles evil-exchange evil-evilified-state evil-escape evil-ediff evil-easymotion evil-collection evil-cleverparens evil-args evil-anzu eval-sexp-fu eshell-z eshell-prompt-extras esh-help emr emmet-mode elm-test-runner elm-mode elisp-slime-nav elisp-def editorconfig dumb-jump drag-stuff dotenv-mode dired-quick-sort diminish devdocs define-word cython-mode company-web company-anaconda column-enforce-mode code-cells clean-aindent-mode centered-cursor-mode cargo blacken auto-yasnippet auto-highlight-symbol auto-dictionary auto-compile alchemist aggressive-indent ace-link ace-jump-helm-line ac-ispell)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
