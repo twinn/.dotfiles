@@ -3,10 +3,14 @@
 ;; Author: Tony Winn
 
 (require 'org)
+(require 'dash)
 
 (defun org-sort-parent ()
+  "Sort entries by reverse todo state > priority > scheduled time"
   (interactive)
   (outline-up-heading 1)
+  (org-sort-entries nil ?s)
+  (org-sort-entries nil ?p)
   (org-sort-entries nil ?O)
   (outline-hide-leaves)
 )
