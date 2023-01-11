@@ -73,7 +73,10 @@ This function should only modify configuration layer settings."
      syntax-checking
      quickurl
      ;; version-control
-     treemacs)
+     (use-package treemacs
+       :init (setq treemacs-show-hidden-files nil)
+     )
+   )
 
 
    ;; List of additional packages that will be installed without being wrapped
