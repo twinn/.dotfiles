@@ -604,7 +604,8 @@ before packages are loaded."
   (setq
    split-width-threshold 0
    split-height-threshold nil)
-  (golden-ratio-mode 1))
+  (golden-ratio-mode 1)
+  (mapc 'load (file-expand-wildcards "~/.config/emacs/*.el")))
 
 
 ;; Do not write anything past this comment. This is where Emacs will
