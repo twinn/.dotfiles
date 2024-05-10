@@ -16,18 +16,8 @@
 )
 (spacemacs/set-leader-keys-for-major-mode 'org-mode "S" 'org-sort-parent)
 
-(require 'quickurl)
-
-(defun quickurl-copy-url-ask (lookup)
-  "Copy the URL, with `completing-read' prompt, associated with LOOKUP."
-  (interactive (list
-                (progn
-                  (quickurl-load-urls)
-                  (completing-read "Browse: " quickurl-urls nil t))))
-  (let ((url (quickurl-find-url lookup)))
-    (when url
-      (kill-new (quickurl-url-url url)))))
-
-(spacemacs/set-leader-keys "atqc" 'quickurl-copy-url-ask)
-
+(spacemacs/set-leader-keys-for-major-mode 'elixir-mode "tt" 'exunit-verify-single)
+(spacemacs/set-leader-keys-for-major-mode 'elixir-mode "tr" 'exunit-rerun)
+(spacemacs/set-leader-keys-for-major-mode 'elixir-mode "ta" 'exunit-verify-all)
+(spacemacs/set-leader-keys-for-major-mode 'elixir-mode "tb" 'exunit-verify)
 (provide 'tw-custom)
