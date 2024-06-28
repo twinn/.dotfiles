@@ -16,6 +16,9 @@ stow emacs
 
 ```sh
 brew install ispell
+brew tap d12frosted/emacs-plus
+git clone https://github.com/syl20bnr/spacemacs ~/.emacs.d
+brew install emacs-plus --with-spacemacs-icon
 ```
 
 ### Symlink Org directory to cloud provider
