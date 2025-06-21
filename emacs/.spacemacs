@@ -4,7 +4,7 @@
 
 (defun org-relative (path)
   (concat "~/org" path)
-)
+  )
 
 (defun dotspacemacs/layers ()
   "Layer configuration:
@@ -59,24 +59,33 @@ This function should only modify configuration layer settings."
      helm
      ;; lsp
      multiple-cursors
+     dart
      (org :variables
           org-startup-folded t
           org-enable-org-journal-support t
           org-enable-roam-support t
+          org-enable-roam-ui t
+          org-enable-roam-protocol t
           org-default-notes-file (org-relative "/inbox.org")
           org-archive-location (org-relative "/.archive/%s::")
-          org-roam-directory (expand-file-name (org-relative "/roam")))
+          org-roam-directory (expand-file-name (org-relative "/roam"))
+          ;; Set default export options
+          org-export-with-toc nil                 ; No table of contents
+          org-export-with-section-numbers nil     ; No section numbers
+          org-html-head-include-default-style nil ; Don't include default CSS
+          ;; Set default HTML head content
+          org-html-head "<link rel=\"stylesheet\" type=\"text/css\" href=\"https://fniessen.github.io/org-html-themes/src/readtheorg_theme/css/htmlize.css\"/>
+       <link rel=\"stylesheet\" type=\"text/css\" href=\"https://fniessen.github.io/org-html-themes/src/readtheorg_theme/css/readtheorg.css\"/>")
      (shell :variables
             shell-default-height 30
             shell-default-position 'bottom)
      spell-checking
      syntax-checking
      quickurl
+     (llm-client :variables
+                 llm-client-enable-gptel t)
      ;; version-control
-     (use-package treemacs
-       :init (setq treemacs-show-hidden-files nil)
      )
-   )
 
 
    ;; List of additional packages that will be installed without being wrapped
@@ -87,7 +96,7 @@ This function should only modify configuration layer settings."
    ;; `dotspacemacs/user-config'. To use a local version of a package, use the
    ;; `:location' property: '(your-package :location "~/path/to/your-package/")
    ;; Also include the dependencies as they will not be resolved automatically.
-   dotspacemacs-additional-packages '(flycheck-grammarly)
+   dotspacemacs-additional-packages '(treemacs lsp-mode exunit emacsql dash magit-section f s)
 
    ;; A list of packages that cannot be updated.
    dotspacemacs-frozen-packages '()
@@ -567,7 +576,7 @@ default it calls `spacemacs/load-spacemacs-env' which loads the environment
 variables declared in `~/.spacemacs.env' or `~/.spacemacs.d/.spacemacs.env'.
 See the header of this file for more information."
   (spacemacs/load-spacemacs-env)
-)
+  )
 
 (defun dotspacemacs/user-init ()
   "Initialization for user code:
@@ -575,13 +584,22 @@ This function is called immediately after `dotspacemacs/init', before layer
 configuration.
 It is mostly for variables that should be set before packages are loaded.
 If you are unsure, try setting them in `dotspacemacs/user-config' first."
+  (add-hook 'elixir-mode-hook 'exunit-mode)
+  (add-hook 'elixir-mode-hook
+            (lambda () (add-hook 'before-save-hook 'elixir-format nil t)))
+  (with-eval-after-load 'elixir-mode
+    (spacemacs/declare-prefix-for-mode 'elixir-mode
+      "mt" "tests" "testing related functionality")
+    (spacemacs/set-leader-keys-for-major-mode 'elixir-mode
+      "ta" 'exunit-verify-all
+      "tb" 'exunit-verify
+      "tr" 'exunit-rerun
+      "tt" 'exunit-verify-single))
 
   (setq org-directory (org-relative ""))
   (setq org-default-notes-file (org-relative "/inbox.org"))
-  (load "~/.config/emacs/org-habit-plus-plus.el")
-  (with-eval-after-load 'org
-    (mapc 'load (file-expand-wildcards "~/.config/emacs/*.el"))
-    (add-to-list 'org-modules 'org-habit-plus-plus t)))
+  (setq org-todo-keywords
+        '((sequence "TODO" "INPROGRESS" "|" "DONE"))))
 
 
 (defun dotspacemacs/user-load ()
@@ -589,7 +607,7 @@ If you are unsure, try setting them in `dotspacemacs/user-config' first."
 This function is called only while dumping Spacemacs configuration. You can
 `require' or `load' the libraries of your choice that will be included in the
 dump."
-)
+  )
 
 
 (defun dotspacemacs/user-config ()
@@ -598,39 +616,111 @@ This function is called at the very end of Spacemacs startup, after layer
 configuration.
 Put your configuration code here, except for variables that should be set
 before packages are loaded."
+  (setq
+   gptel-model 'claude-sonnet-4-20250514
+   gptel-backend (gptel-make-anthropic "Claude"
+                   :stream t
+                   :key (auth-source-pick-first-password :host "api.anthropic.com")))
   (add-hook 'org-mode-hook 'turn-on-auto-fill)
   (set 'org-habit-show-all-today t)
   (setq
    split-width-threshold 0
    split-height-threshold nil)
+  (push '("*exunit-compilation*"
+          :dedicated t
+          :position bottom
+          :stick t
+          :height 0.4
+          :noselect t)
+        popwin:special-display-config)
+  (use-package lsp-mode
+    :commands lsp
+    :ensure t
+    :diminish lsp-mode
+    :hook
+    (elixir-mode . lsp)
+    :init
+    (add-to-list 'exec-path "~/code/elixir-ls-v0/"))
+  (use-package treemacs
+    :init (setq treemacs-show-hidden-files nil)
+    )
+  (with-eval-after-load 'org-roam
+    (org-roam-db-autosync-mode))
+  (golden-ratio-mode)
   )
 
 
 ;; Do not write anything past this comment. This is where Emacs will
-; auto-generate custom variable definitions.
+                                        ; auto-generate custom variable definitions.
 (defun dotspacemacs/emacs-custom-settings ()
   "Emacs custom settings.
 This is an auto-generated function, do not modify its content directly, use
 Emacs customize menu instead.
 This function is called at the very end of Spacemacs initialization."
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(org-agenda-files
-   '("~/org/habits.org" "~/org/weekly.org"))
- '(package-selected-packages
-   '(tern yasnippet-snippets yapfify yaml-mode xterm-color ws-butler writeroom-mode winum which-key web-mode web-beautify vterm volatile-highlights vim-powerline vi-tilde-fringe uuidgen use-package undo-tree treemacs-projectile treemacs-persp treemacs-magit treemacs-icons-dired treemacs-evil toml-mode toc-org terminal-here term-cursor tagedit symon symbol-overlay string-inflection string-edit sql-indent sphinx-doc spacemacs-whitespace-cleanup spacemacs-purpose-popwin spaceline-all-the-icons space-doc smeargle slim-mode shell-pop scss-mode sass-mode ron-mode restart-emacs rainbow-delimiters racer quickrun pytest pylookup pyenv-mode pydoc py-isort pug-mode protobuf-mode prettier-js popwin poetry pippel pipenv pip-requirements pcre2el password-generator paradox overseer orgit-forge org-superstar org-roam org-rich-yank org-projectile org-present org-pomodoro org-mime org-journal org-download org-contrib org-cliplink open-junk-file ob-elixir npm-mode nose nodejs-repl nameless multi-term multi-line mmm-mode markdown-toc macrostep lorem-ipsum livid-mode live-py-mode link-hint json-reformat json-navigator json-mode js2-refactor js-doc inspector info+ indent-guide importmagic impatient-mode hybrid-mode hungry-delete holy-mode hl-todo highlight-parentheses highlight-numbers highlight-indentation hide-comnt help-fns+ helm-xref helm-themes helm-swoop helm-pydoc helm-purpose helm-projectile helm-org-rifle helm-org helm-mode-manager helm-make helm-ls-git helm-git-grep helm-flx helm-descbinds helm-css-scss helm-company helm-c-yasnippet helm-ag google-translate golden-ratio gnuplot gitignore-templates git-timemachine git-modes git-messenger git-link gh-md fuzzy font-lock+ flyspell-correct-helm flycheck-rust flycheck-pos-tip flycheck-package flycheck-grammarly flycheck-elsa flycheck-elm flycheck-credo flx-ido fancy-battery eyebrowse expand-region evil-visualstar evil-visual-mark-mode evil-unimpaired evil-tutor evil-textobj-line evil-surround evil-org evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-lisp-state evil-lion evil-indent-plus evil-iedit-state evil-goggles evil-exchange evil-evilified-state evil-escape evil-ediff evil-easymotion evil-collection evil-cleverparens evil-args evil-anzu eval-sexp-fu eshell-z eshell-prompt-extras esh-help emr emmet-mode elm-test-runner elm-mode elisp-slime-nav elisp-def editorconfig dumb-jump drag-stuff dotenv-mode dired-quick-sort diminish devdocs define-word cython-mode company-web company-anaconda column-enforce-mode code-cells clean-aindent-mode centered-cursor-mode cargo blacken auto-yasnippet auto-highlight-symbol auto-dictionary auto-compile alchemist aggressive-indent ace-link ace-jump-helm-line ac-ispell)))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(highlight-parentheses-highlight ((nil (:weight ultra-bold))) t))
-)
+  (custom-set-variables
+   ;; custom-set-variables was added by Custom.
+   ;; If you edit it by hand, you could mess it up, so be careful.
+   ;; Your init file should contain only one such instance.
+   ;; If there is more than one, they won't work right.
+   '(org-agenda-files '("~/org/habits.org" "~/org/weekly.org"))
+   '(org-safe-remote-resources
+     '("\\`https://fniessen\\.github\\.io/org-html-themes/org/theme-readtheorg\\.setup\\'"))
+   '(package-selected-packages
+     '(ac-ispell ace-jump-helm-line ace-link aggressive-indent alchemist auto-compile
+                 auto-dictionary auto-highlight-symbol auto-yasnippet blacken bui
+                 cargo centered-cursor-mode clean-aindent-mode code-cells
+                 column-enforce-mode company-anaconda company-web cython-mode
+                 dap-mode dart-mode define-word devdocs diminish dired-quick-sort
+                 dotenv-mode drag-stuff dumb-jump editorconfig elisp-def
+                 elisp-slime-nav elm-mode elm-test-runner emmet-mode emr esh-help
+                 eshell-prompt-extras eshell-z eval-sexp-fu evil-anzu evil-args
+                 evil-cleverparens evil-collection evil-easymotion evil-ediff
+                 evil-escape evil-evilified-state evil-exchange evil-goggles
+                 evil-iedit-state evil-indent-plus evil-lion evil-lisp-state
+                 evil-matchit evil-mc evil-nerd-commenter evil-numbers evil-org
+                 evil-surround evil-textobj-line evil-tutor evil-unimpaired
+                 evil-visual-mark-mode evil-visualstar expand-region eyebrowse
+                 fancy-battery flutter flx-ido flycheck-credo flycheck-elm
+                 flycheck-elsa flycheck-grammarly flycheck-package
+                 flycheck-pos-tip flycheck-rust flyspell-correct-helm font-lock+
+                 fuzzy gh-md git-link git-messenger git-modes git-timemachine
+                 gitignore-templates gnuplot golden-ratio google-translate helm-ag
+                 helm-c-yasnippet helm-company helm-css-scss helm-descbinds
+                 helm-flx helm-git-grep helm-ls-git helm-lsp helm-make
+                 helm-mode-manager helm-org helm-org-rifle helm-projectile
+                 helm-purpose helm-pydoc helm-swoop helm-themes helm-xref
+                 help-fns+ hide-comnt highlight-indentation highlight-numbers
+                 highlight-parentheses hl-todo holy-mode hungry-delete hybrid-mode
+                 impatient-mode importmagic indent-guide info+ inspector js-doc
+                 js2-refactor json-mode json-navigator json-reformat link-hint
+                 live-py-mode livid-mode lorem-ipsum lsp-dart lsp-docker lsp-mode
+                 lsp-origami lsp-treemacs lsp-ui macrostep markdown-toc mmm-mode
+                 multi-line multi-term nameless nodejs-repl nose npm-mode
+                 ob-elixir open-junk-file org-cliplink org-contrib org-download
+                 org-journal org-mime org-pomodoro org-present org-projectile
+                 org-rich-yank org-roam org-superstar orgit-forge origami overseer
+                 paradox password-generator pcre2el pip-requirements pipenv pippel
+                 poetry popwin prettier-js protobuf-mode pug-mode py-isort pydoc
+                 pyenv-mode pylookup pytest quickrun racer rainbow-delimiters
+                 restart-emacs ron-mode sass-mode scss-mode shell-pop slim-mode
+                 smeargle space-doc spaceline-all-the-icons
+                 spacemacs-purpose-popwin spacemacs-whitespace-cleanup sphinx-doc
+                 sql-indent string-edit string-inflection symbol-overlay symon
+                 tagedit term-cursor terminal-here tern toc-org toml-mode
+                 treemacs-evil treemacs-icons-dired treemacs-magit treemacs-persp
+                 treemacs-projectile undo-tree use-package uuidgen vi-tilde-fringe
+                 vim-powerline volatile-highlights vterm web-beautify web-mode
+                 which-key winum writeroom-mode ws-butler xterm-color yaml-mode
+                 yapfify yasnippet-snippets)))
+  (custom-set-faces
+   ;; custom-set-faces was added by Custom.
+   ;; If you edit it by hand, you could mess it up, so be careful.
+   ;; Your init file should contain only one such instance.
+   ;; If there is more than one, they won't work right.
+   '(highlight-parentheses-highlight ((nil (:weight ultra-bold))) t))
+  )
 (with-eval-after-load 'org
   (setq org-plantuml-jar-path (expand-file-name "/usr/local/opt/plantuml/libexec/plantuml.jar"))
   (add-to-list 'org-src-lang-modes '("plantuml" . plantuml))
   (org-babel-do-load-languages 'org-babel-load-languages '((shell . t) (plantuml . t)))
-)
+  )
