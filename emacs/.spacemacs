@@ -46,7 +46,10 @@ This function should only modify configuration layer settings."
      yaml
      javascript
      markdown
-     elixir
+     (elixir :variables
+             elixir-backend 'lsp
+             elixir-ls-path "/Users/tony/.local/bin"
+             lsp-elixir-server-command '("expert" "--stdio"))
      ;; ----------------------------------------------------------------
      ;; Example of useful layers you may want to use right away.
      ;; Uncomment some layer names and press `SPC f e R' (Vim style) or
@@ -57,7 +60,8 @@ This function should only modify configuration layer settings."
      emacs-lisp
      git
      helm
-     ;; lsp
+     (lsp :variables
+          lsp-modeline-code-actions-segments '(count icon name))
      multiple-cursors
      dart
      (org :variables
@@ -66,6 +70,7 @@ This function should only modify configuration layer settings."
           org-enable-roam-support t
           org-enable-roam-ui t
           org-enable-roam-protocol t
+          org-icalendar-include-todo 'all
           org-default-notes-file (org-relative "/inbox.org")
           org-archive-location (org-relative "/.archive/%s::")
           org-roam-directory (expand-file-name (org-relative "/roam"))
@@ -77,8 +82,9 @@ This function should only modify configuration layer settings."
           org-html-head "<link rel=\"stylesheet\" type=\"text/css\" href=\"https://fniessen.github.io/org-html-themes/src/readtheorg_theme/css/htmlize.css\"/>
        <link rel=\"stylesheet\" type=\"text/css\" href=\"https://fniessen.github.io/org-html-themes/src/readtheorg_theme/css/readtheorg.css\"/>")
      (shell :variables
-            shell-default-height 30
-            shell-default-position 'bottom)
+            shell-default-shell 'vterm
+            shell-default-width 40
+            shell-default-position 'right)
      spell-checking
      syntax-checking
      quickurl
@@ -96,7 +102,7 @@ This function should only modify configuration layer settings."
    ;; `dotspacemacs/user-config'. To use a local version of a package, use the
    ;; `:location' property: '(your-package :location "~/path/to/your-package/")
    ;; Also include the dependencies as they will not be resolved automatically.
-   dotspacemacs-additional-packages '(treemacs lsp-mode exunit emacsql dash magit-section f s)
+   dotspacemacs-additional-packages '(treemacs lsp-mode exunit emacsql flycheck-lilypond dash magit-section f s)
 
    ;; A list of packages that cannot be updated.
    dotspacemacs-frozen-packages '()
@@ -593,6 +599,9 @@ If you are unsure, try setting them in `dotspacemacs/user-config' first."
     (spacemacs/set-leader-keys-for-major-mode 'elixir-mode
       "ta" 'exunit-verify-all
       "tb" 'exunit-verify
+      "tp" (lambda () (interactive)
+             (let ((default-directory (projectile-project-root)))
+               (compile "mix precommit")))
       "tr" 'exunit-rerun
       "tt" 'exunit-verify-single))
 
@@ -617,11 +626,18 @@ configuration.
 Put your configuration code here, except for variables that should be set
 before packages are loaded."
   (setq
-   gptel-model 'claude-sonnet-4-20250514
+   gptel-model 'claude-opus-4-6
    gptel-backend (gptel-make-anthropic "Claude"
                    :stream t
                    :key (auth-source-pick-first-password :host "api.anthropic.com")))
+  (setq org-blank-before-new-entry '((heading . nil) (plain-list-item . nil)))
   (add-hook 'org-mode-hook 'turn-on-auto-fill)
+  (add-hook 'LilyPond-mode-hook 'flycheck-mode)
+  (eval-after-load 'flycheck '(require 'flycheck-lilypond))
+  (setq org-babel-lilypond-commands '("/opt/homebrew/bin/lilypond" "open" "open"))
+  (require 'ob-lilypond)
+  (setq org-babel-lilypond-commands "lilypond")
+
   (set 'org-habit-show-all-today t)
   (setq
    split-width-threshold 0
@@ -633,20 +649,13 @@ before packages are loaded."
           :height 0.4
           :noselect t)
         popwin:special-display-config)
-  (use-package lsp-mode
-    :commands lsp
-    :ensure t
-    :diminish lsp-mode
-    :hook
-    (elixir-mode . lsp)
-    :init
-    (add-to-list 'exec-path "~/code/elixir-ls-v0/"))
+
   (use-package treemacs
     :init (setq treemacs-show-hidden-files nil)
     )
   (with-eval-after-load 'org-roam
     (org-roam-db-autosync-mode))
-  (golden-ratio-mode)
+  (spacemacs/toggle-golden-ratio-on)
   )
 
 
